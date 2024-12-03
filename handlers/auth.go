@@ -9,28 +9,35 @@ import (
 )
 
 // func para lidar com os registro de usuarios
+
+// Função de Handler para o registro do usuário com dados da empresa
 func RegisterHandler(db *mongo.Collection) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
-		// estrutura vai armazenar os dados recebidos
+		// Estrutura que vai armazenar os dados recebidos
 		var data struct {
 			Email    string `json:"email"`
 			Password string `json:"password"`
+			Company  struct {
+				Nome string `json:"nome"`
+				CNPJ string `json:"cnpj"`
+			} `json:"company"`
 		}
-		// Decodificar os dados json
+
+		// Decodificar os dados JSON
 		err := json.NewDecoder(r.Body).Decode(&data)
 		if err != nil {
 			http.Error(w, "Invalid JSON format", http.StatusBadRequest)
+			return
 		}
 
 		// Chama a função de registro
-		err = services.RegisterUser(db, data.Email, data.Password)
+		err = services.RegisterUser(db, data.Email, data.Password, data.Company.Nome, data.Company.CNPJ)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		//Retorn status 201 - criado
+		// Retorna status 201 - Criado
 		w.WriteHeader(http.StatusCreated)
 		w.Write([]byte("User registered successfully"))
 	}

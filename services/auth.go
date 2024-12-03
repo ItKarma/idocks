@@ -13,7 +13,7 @@ import (
 )
 
 // função de registro de usuario
-func RegisterUser(db *mongo.Collection, email, password string) error {
+func RegisterUser(db *mongo.Collection, email, password, company, cnpj string) error {
 	//verificando se o usuario existe
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -41,9 +41,14 @@ func RegisterUser(db *mongo.Collection, email, password string) error {
 
 	//inserir o novo usuario
 
+	newCompany := models.Company{
+		Nome: company,
+		CNPJ: cnpj,
+	}
 	newUser := models.User{
 		Email:    email,
 		Password: hashedPassword,
+		Company:  newCompany,
 	}
 
 	_, err = db.InsertOne(ctx, newUser)
