@@ -6,7 +6,6 @@ import (
 
 	"github.com/ItKarma/idocks/models"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -18,48 +17,34 @@ func NewDocksRepository(db *mongo.Collection) *DocksRepository {
 	return &DocksRepository{db: db}
 }
 
-func (r *DocksRepository) CreateDocks(ctx context.Context, id string, dock models.Dock) error {
-
-	objectID, err := primitive.ObjectIDFromHex(id)
+func (r *DocksRepository) CreateDocks(ctx context.Context, userId string, dock models.Dock) error {
+	// Buscar o usuário com o id
+	user, err := r.FindUserById(ctx, userId)
 	if err != nil {
-		return fmt.Errorf("invalid ID format: %v", err)
+		return fmt.Errorf("error fetching user: %v", err)
+	}
+	if user == nil {
+		return fmt.Errorf("user not found with id: %v", userId)
 	}
 
-	var company models.Company
-	err = r.db.FindOne(ctx, bson.M{"_id": objectID}).Decode(&company)
-	if err != mongo.ErrNoDocuments && err != nil {
-
-		return fmt.Errorf("failed to create company: %v", err)
+	// Verifica se já existe uma doca com o mesmo nomewaa
+	for _, existingDock := range user.Docas {
+		if existingDock.Name == dock.Name {
+			return fmt.Errorf("dock with name '%s' already exists", dock.Name)
+		}
 	}
 
-	fmt.Println(company)
+	// Se não existir, adiciona a nova doca à lista
+	user.Docas = append(user.Docas, dock)
 
-	if company.Docas == nil {
-		company.Docas = []models.Dock{}
-	}
-
-	company.Docas = append(company.Docas, dock)
-
-	// Atualiza a empresa no banco, incluindo a lista de docas
+	// Atualiza a empresa no banco, incluindo a nova doca
 	_, err = r.db.UpdateOne(ctx,
-		bson.M{"_id": objectID},                        // Filtro para encontrar a empresa pelo ID
-		bson.M{"$set": bson.M{"docas": company.Docas}}) // Atualizar o campo 'docas'
+		bson.M{"_id": user.ID},
+		bson.M{"$set": bson.M{"docas": user.Docas}})
 
 	if err != nil {
 		return fmt.Errorf("erro ao atualizar empresa: %v", err)
 	}
 
 	return nil
-}
-
-func (r *DocksRepository) FindDockByName(ctx context.Context, name string) (*models.Dock, error) {
-	var dock models.Dock
-	err := r.db.FindOne(ctx, bson.M{"Name": name}).Decode(&dock)
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return nil, nil
-		}
-		return nil, err
-	}
-	return &dock, nil
 }

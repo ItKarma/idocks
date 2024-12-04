@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/ItKarma/idocks/models"
@@ -26,8 +25,7 @@ func RegisterDock(db *mongo.Collection) http.HandlerFunc {
 			return
 		}
 
-		// Verificar os dados recebidos (para depuração)
-		fmt.Println(doca)
+		//fmt.Println(doca)
 
 		repo := repository.NewDocksRepository(db)
 

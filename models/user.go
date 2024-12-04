@@ -28,4 +28,5 @@ type User struct {
 	Email    string             `bson:"email"`         // E-mail do usuário
 	Password string             `bson:"password"`      // Senha do usuário
 	Company  Company            `bson:"company"`       // Detalhes da empresa associada ao usuário
+	Docas    []Dock             `bson:"docas"`         // Lista de docas associadas ao usuário
 }
