@@ -4,11 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/ItKarma/idocks/repository"
 	"github.com/ItKarma/idocks/services"
 	"go.mongodb.org/mongo-driver/mongo"
 )
-
-// func para lidar com os registro de usuarios
 
 // Função de Handler para o registro do usuário com dados da empresa
 func RegisterHandler(db *mongo.Collection) http.HandlerFunc {
@@ -59,8 +58,11 @@ func LoginHandler(db *mongo.Collection) http.HandlerFunc {
 			return
 		}
 
+		// colocando o repository para ficar responsavel com dados
+		repo := repository.NewUserRepository(db)
+
 		// Chama a função de login no serviço
-		token, err := services.LoginUser(db, data.Email, data.Password)
+		token, err := services.LoginUser(repo, data.Email, data.Password)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return

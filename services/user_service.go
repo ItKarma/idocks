@@ -3,10 +3,10 @@ package services
 import (
 	"context"
 	"errors"
-	"log"
 	"time"
 
 	"github.com/ItKarma/idocks/models"
+	"github.com/ItKarma/idocks/repository"
 	"github.com/ItKarma/idocks/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -57,23 +57,29 @@ func RegisterUser(db *mongo.Collection, email, password, company, cnpj string) e
 }
 
 // função de autenticação do usuario
-
-func LoginUser(db *mongo.Collection, email, password string) (string, error) {
+func LoginUser(repo *repository.UserRepository, email, password string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// buscar usuario
-	var user models.User
-	err := db.FindOne(ctx, bson.M{"email": email}).Decode(&user)
+	// Buscar usuário por email
+	user, err := repo.FindUserByEmail(ctx, email)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
+	}
+	if user == nil {
 		return "", errors.New("usuário ou senha inválidos")
 	}
 
-	// verificar a senha
+	// Verificar a senha
 	if !utils.VerifyPassword(user.Password, password) {
 		return "", errors.New("usuário ou senha inválidos")
 	}
 
-	return utils.GerenateToken(user.ID.Hex())
+	// Gerar token
+	token, err := utils.GerenateToken(user.ID.Hex())
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 }

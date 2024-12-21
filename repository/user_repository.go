@@ -41,16 +41,15 @@ func (r *DocksRepository) FindUserById(ctx context.Context, id string) (*models.
 	return &user, nil
 }
 
-func (r *DocksRepository) FindUserByEmail(ctx context.Context, email string) (*models.User, error) {
-
+// Método para encontrar usuário por e-mail
+func (r *UserRepository) FindUserByEmail(ctx context.Context, email string) (*models.User, error) {
 	var user models.User
 	err := r.db.FindOne(ctx, bson.M{"email": email}).Decode(&user)
-	//fmt.Println("User found:", user)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, nil
+			return nil, nil // Usuário não encontrado
 		}
-		return nil, err
+		return nil, fmt.Errorf("erro ao buscar usuário: %v", err)
 	}
 
 	return &user, nil

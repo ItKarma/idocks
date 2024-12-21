@@ -48,3 +48,14 @@ func (r *DocksRepository) CreateDocks(ctx context.Context, userId string, dock m
 
 	return nil
 }
+
+func (r *DocksRepository) ListDocks(ctx context.Context, userId string) (*models.User, error) {
+	// Buscar o usuário com o id
+	user, err := r.FindUserById(ctx, userId)
+
+	if err != nil {
+		return nil, fmt.Errorf("erro ao atualizar empresa: %v", err)
+	}
+
+	return user, nil
+}
