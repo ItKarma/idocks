@@ -17,7 +17,7 @@ func NewDocksRepository(db *mongo.Collection) *DocksRepository {
 	return &DocksRepository{db: db}
 }
 
-func (r *DocksRepository) CreateDocks(ctx context.Context, userId string, dock models.Dock) error {
+func (r *DocksRepository) CreateDocks(ctx context.Context, userId string, dock models.Docks) error {
 	// Buscar o usuário com o id
 	user, err := r.FindUserById(ctx, userId)
 	if err != nil {

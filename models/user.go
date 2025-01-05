@@ -7,7 +7,7 @@ import (
 )
 
 // armazenar as informações da Doca
-type Dock struct {
+type Docks struct {
 	Name           string    `json:"name_docks"`      // Número identificador da doca
 	Status         bool      `json:"status"`          // Status da doca (ocupada ou não)
 	PlacaMotorista string    `json:"placa_motorista"` // Placa do motorista utilizando a doca
@@ -17,9 +17,8 @@ type Dock struct {
 
 // armazenar as informações da Empresa
 type Company struct {
-	Nome  string `bson:"nome"`  // Nome da empresa
-	CNPJ  string `bson:"cnpj"`  // CNPJ da empresa
-	Docas []Dock `bson:"docas"` // Lista de docas associadas à empresa
+	Nome string `bson:"nome"` // Nome da empresa
+	CNPJ string `bson:"cnpj"` // CNPJ da empresa
 }
 
 // armazenar o Usuário
@@ -28,5 +27,5 @@ type User struct {
 	Email    string             `bson:"email"`         // E-mail do usuário
 	Password string             `bson:"password"`      // Senha do usuário
 	Company  Company            `bson:"company"`       // Detalhes da empresa associada ao usuário
-	Docas    []Dock             `bson:"docas"`         // Lista de docas associadas ao usuário
+	Docas    []Docks            `bson:"docas"`         // Lista de docas associadas ao usuário
 }

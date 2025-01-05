@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/ItKarma/idocks/models"
 	"github.com/ItKarma/idocks/repository"
@@ -10,13 +11,23 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+func convertDockToResponse(dock models.Docks) models.DockResponse {
+	return models.DockResponse{
+		Name:           dock.Name,
+		Status:         dock.Status,
+		PlacaMotorista: dock.PlacaMotorista,
+		HoraEntrada:    dock.HoraEntrada.Format(time.RFC3339),
+		HoraSaida:      dock.HoraSaida.Format(time.RFC3339),
+	}
+}
+
 // Função de Handler para o registro de docas da empresa
 func RegisterDock(db *mongo.Collection) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID := r.Context().Value("userID").(string)
 
 		// Estrutura que vai armazenar os dados recebidos
-		var doca models.Dock
+		var doca models.Docks
 
 		// Decodificar os dados JSON
 		err := json.NewDecoder(r.Body).Decode(&doca)
@@ -48,7 +59,7 @@ func EditDock(db *mongo.Collection) http.HandlerFunc {
 		userID := r.Context().Value("userID").(string)
 
 		// Estrutura que vai armazenar os dados recebidos
-		var doca models.Dock
+		var doca models.Docks
 
 		// Decodificar os dados JSON
 		err := json.NewDecoder(r.Body).Decode(&doca)
@@ -88,9 +99,24 @@ func ListDocks(db *mongo.Collection) http.HandlerFunc {
 			return
 		}
 
+		var dockResponses []models.DockResponse
+		for _, dock := range user.Docas {
+			dockResponses = append(dockResponses, convertDockToResponse(dock))
+		}
+
+		userListDocks := &models.UserResponse{
+			ID:    user.ID,
+			Email: user.Email,
+			Company: models.CompanyResponse{
+				CNPJ: user.Company.CNPJ,
+				Nome: user.Company.Nome,
+			},
+			Docas: dockResponses,
+		}
+
 		// Retorna status 201 - Criado
 		w.WriteHeader(http.StatusCreated)
-		err = json.NewEncoder(w).Encode(user)
+		err = json.NewEncoder(w).Encode(userListDocks)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}

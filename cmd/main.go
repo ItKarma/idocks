@@ -20,8 +20,6 @@ func main() {
 	}
 
 	MONGODB_URL := os.Getenv("MONGODB_URL")
-	//fmt.Println(MONGODB_URL)
-
 	client := database.ConnectDB(MONGODB_URL)
 	db := client.Database("auth-api").Collection("users")
 
