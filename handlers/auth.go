@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/ItKarma/idocks/models"
 	"github.com/ItKarma/idocks/repository"
 	"github.com/ItKarma/idocks/services"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -13,15 +14,7 @@ import (
 func RegisterHandler(db *mongo.Collection) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Estrutura que vai armazenar os dados recebidos
-		var data struct {
-			Email    string `json:"email"`
-			Password string `json:"password"`
-			Company  struct {
-				Nome string `json:"nome"`
-				CNPJ string `json:"cnpj"`
-			} `json:"company"`
-		}
-
+		var data *models.UserCreateRequest
 		// Decodificar os dados JSON
 		err := json.NewDecoder(r.Body).Decode(&data)
 		if err != nil {
@@ -46,11 +39,7 @@ func RegisterHandler(db *mongo.Collection) http.HandlerFunc {
 
 func LoginHandler(db *mongo.Collection) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var data struct {
-			Email    string `json:"email"`
-			Password string `json:"password"`
-		}
-
+		var data models.UserLoginRequest
 		// Decodifica o corpo JSON da requisição
 		err := json.NewDecoder(r.Body).Decode(&data)
 		if err != nil {
@@ -61,7 +50,7 @@ func LoginHandler(db *mongo.Collection) http.HandlerFunc {
 		// colocando o repository para ficar responsavel com dados
 		repo := repository.NewUserRepository(db)
 
-		// Chama a função de login no serviço
+		// Chama a função de login no service
 		token, err := services.LoginUser(repo, data.Email, data.Password)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusUnauthorized)
@@ -73,6 +62,9 @@ func LoginHandler(db *mongo.Collection) http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 
 		// Retorna o token em formato JSON
-		json.NewEncoder(w).Encode(map[string]string{"token": token})
+		json.NewEncoder(w).Encode(map[string]string{
+			"token": token,
+			"email": data.Email,
+		})
 	}
 }
